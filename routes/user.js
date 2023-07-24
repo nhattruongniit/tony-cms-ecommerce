@@ -1,4 +1,7 @@
 const router = require('express').Router();
+const bcrypt = require('bcryptjs');
+
+// model
 const User = require('../model/User');
 
 
@@ -46,20 +49,64 @@ router.post('/', async (req, res) => {
       isSucess: false
     })
     return
-  }
+  };
+
+  // hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, salt);
 
   // create new item
   const newItem = new User({
     first_name,
     last_name,
     email,
-    password
+    password: hashPassword
   })
 
   try {
     await newItem.save();
     res.status(200).json({
       message: 'Create successfully',
+      isSucess: true
+    })
+  } catch(error) {
+    res.status(500).json({
+      isSuccess: false,
+      message: error
+    })
+  }
+})
+
+// @route   POST api/user/login
+// @desc    Login user
+// @access  Public
+router.post('/login', async (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+
+  try {
+    // check email existed
+    const user = await User.findOne({ email });
+    if(!user) {
+      res.status(400).json({
+        message: 'Email or password is wrong',
+        isSucess: false
+      })
+      return
+    };
+
+    // check password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if(!isValidPassword) {
+      res.status(400).json({
+        message: 'Email or password is wrong',
+        isSucess: false
+      })
+      return
+    }
+
+    res.status(200).json({
+      message: 'Login successfully',
       isSucess: true
     })
   } catch(error) {
