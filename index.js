@@ -1,15 +1,20 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const app = express();
+
+dotenv.config();
 
 //
 const userRouter = require('./routes/user');
 
+// env
+const PORT = process.env.PORT || 3004;
 
 // connect to mongodb
 mongoose
   .connect(
-    "mongodb+srv://nhattruongniit:4GSvxHcwA2TvxEfN@cms.plxqbz6.mongodb.net/?retryWrites=true&w=majority",
+    process.env.DB_CONNECT,
     {
       useNewUrlParser: true,
     }
@@ -27,6 +32,6 @@ app.use('/api/user', userRouter);
 
 
 // run server
-app.listen(3004,() => {
-  console.log('server is running on port localhost:3004')
+app.listen(PORT,() => {
+  console.log(`server is running on port localhost:${PORT}`)
 })
