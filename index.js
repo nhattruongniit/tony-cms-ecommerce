@@ -8,7 +8,13 @@ const userRouter = require('./routes/user');
 
 // connect to mongodb
 mongoose
-  .connect("mongodb+srv://nhattruongniit:4GSvxHcwA2TvxEfN@cms.plxqbz6.mongodb.net/?retryWrites=true&w=majority")
+  .connect(
+    "mongodb+srv://nhattruongniit:4GSvxHcwA2TvxEfN@cms.plxqbz6.mongodb.net/?retryWrites=true&w=majority",
+    {
+      useNewUrlParser: true,
+    }
+  )
+  .then(() => console.log('Connect successfully'))
   .catch(error => console.log('Connect failed', error))
 
 
