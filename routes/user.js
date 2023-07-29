@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // model
 const User = require('../model/User');
@@ -105,14 +106,73 @@ router.post('/login', async (req, res) => {
       return
     }
 
-    res.status(200).json({
-      message: 'Login successfully',
-      isSucess: true
-    })
+    // create token
+    const payload = {
+      user: {
+        id: user._id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name
+      }
+    }
+
+    jwt.sign(
+      payload,
+      process.env.SECRET_KEY,
+      { expiresIn: 3600 },
+      (err, token) => {
+        if(err) {
+          res.status(500).json({
+            isSuccess: false,
+            message: err
+          })
+          return;
+        }
+        res.header('x-auth-token', token).status(200).json({
+          token,
+          msg: 'Login successfully',
+          isSucess: true
+        })
+      }
+    )
+
+
+    // res.status(200).json({
+    //   message: 'Login successfully',
+    //   isSucess: true
+    // })
   } catch(error) {
     res.status(500).json({
       isSuccess: false,
       message: error
+    })
+  }
+})
+
+// @route   POST api/user/checkauth
+// @desc    Authenticate user
+// @access  Public
+router.post('/checkauth', async (req, res) => {
+  const token = req.header('x-auth-token');
+
+  if(!token) {
+    res.status(404).json({
+      message: 'Token is not found',
+      isSuccess: false
+    })
+    return;
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.SECRET_KEY);
+    res.status(200).json({
+      user,
+      isSuccess: true
+    })
+  } catch (err) {
+    res.status(500).json({
+      isSuccess: false,
+      message: 'Invalid token'
     })
   }
 })
