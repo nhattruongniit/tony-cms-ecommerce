@@ -5,13 +5,24 @@ const jwt = require('jsonwebtoken');
 // model
 const User = require('../model/User');
 
+// middleware
+const auth = require('../middlewares/auth');
+
+// @route   GET api/user/auth
+// @desc    Check authorize
+// @access  Private
+router.get('/auth', auth, async (_, res) => {
+  res.status(200).json({
+    message: 'You authorized'
+  })
+})
+
 
 // @route   GET api/user
 // @desc    Get user list
 // @access  Public
 router.get('/', async (req, res) => {
   // res.send('user route'); // retrutn static file
-
   try {
     const users = await User.find().sort({ data: -1 });
     const total = users.length;
@@ -83,7 +94,7 @@ router.post('/', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const password = req.body.password; 
 
   try {
     // check email existed
